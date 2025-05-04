@@ -1,0 +1,232 @@
+openapi: 3.0.3
+info:
+  title: Reminders Service API
+  version: 1.0.0
+  description: API for managing reminders in the Daily Inspirational App
+
+servers:
+  - url: http://localhost:8080
+    description: Local development server
+
+paths:
+  /reminder:
+    post:
+      summary: Create a new reminder
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReminderCreateRequest'
+      responses:
+        '201':
+          description: Reminder created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Reminder'
+        '400':
+          description: Invalid input
+        '500':
+          description: Internal server error
+
+    put:
+      summary: Update an existing reminder
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReminderUpdateRequest'
+      responses:
+        '200':
+          description: Reminder updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Reminder'
+        '404':
+          description: Reminder not found
+
+    patch:
+      summary: Activate or deactivate a reminder
+      operationId: toggleReminder
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                reminderId:
+                  type: string
+                active:
+                  type: boolean
+      responses:
+        '200':
+          description: Reminder status updated
+        '404':
+          description: Reminder not found
+
+    delete:
+      summary: Delete a reminder
+      parameters:
+        - name: reminderId
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Reminder deleted
+        '404':
+          description: Reminder not found
+
+  /reminders:
+    get:
+      summary: Get all reminders for a user
+      parameters:
+        - name: userId
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: List of reminders
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Reminder'
+        '404':
+          description: No reminders found
+
+  /reminder/snooze:
+    post:
+      summary: Snooze a reminder
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                reminderId:
+                  type: string
+                snoozeDuration:
+                  type: string
+                  description: ISO 8601 duration (e.g., PT10M for 10 minutes)
+      responses:
+        '200':
+          description: Reminder snoozed
+        '404':
+          description: Reminder not found
+
+  /reminders/date:
+    get:
+      summary: Get reminders for a user on a specific date
+      parameters:
+        - name: userId
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: date
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: Reminders for the date
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Reminder'
+
+components:
+  schemas:
+    Reminder:
+      type: object
+      properties:
+        id:
+          type: string
+        userId:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        startTime:
+          type: string
+          format: date-time
+        endTime:
+          type: string
+          format: date-time
+        recurrenceRule:
+          type: string
+        active:
+          type: boolean
+        timezone:
+          type: string
+        notificationType:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    ReminderCreateRequest:
+      type: object
+      required: [userId, name, startTime]
+      properties:
+        userId:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        startTime:
+          type: string
+          format: date-time
+        endTime:
+          type: string
+          format: date-time
+        recurrenceRule:
+          type: string
+        timezone:
+          type: string
+        notificationType:
+          type: string
+
+    ReminderUpdateRequest:
+      type: object
+      required: [reminderId]
+      properties:
+        reminderId:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        startTime:
+          type: string
+          format: date-time
+        endTime:
+          type: string
+          format: date-time
+        recurrenceRule:
+          type: string
+        active:
+          type: boolean
+        timezone:
+          type: string
+        notificationType:
+          type: string
