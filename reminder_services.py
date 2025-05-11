@@ -8,6 +8,7 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///reminders.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
+
 class Reminder(db.Model):
     id = db.Column(db.String, primary_key=True, default=lambda: str(uuid.uuid4()))
     user_id = db.Column(db.String, nullable=False)
@@ -46,6 +47,7 @@ def create_reminder():
     except Exception as e:
         return jsonify({'error': str(e)}), 400
 
+
 @app.route('/reminders', methods=['GET'])
 def get_reminders():
     user_id = request.args.get('userId')
@@ -54,6 +56,7 @@ def get_reminders():
     reminders = Reminder.query.filter_by(user_id=user_id).all()
     return jsonify([r.as_dict() for r in reminders]), 200
 
+
 @app.route('/reminder', methods=['GET'])
 def get_reminder():
     reminder_id = request.args.get('reminderId')
@@ -61,6 +64,7 @@ def get_reminder():
     if not reminder:
         return jsonify({'error': 'Reminder not found'}), 404
     return jsonify(reminder.as_dict()), 200
+
 
 @app.route('/reminder', methods=['PUT'])
 def update_reminder():
@@ -77,6 +81,7 @@ def update_reminder():
     except Exception as e:
         return jsonify({'error': str(e)}), 400
 
+
 @app.route('/reminder/status', methods=['PATCH'])
 def toggle_reminder_status():
     data = request.json
@@ -86,6 +91,7 @@ def toggle_reminder_status():
     reminder.active = data['active']
     db.session.commit()
     return jsonify({'status': 'updated', 'reminder': reminder.as_dict()}), 200
+
 
 @app.route('/reminder', methods=['DELETE'])
 def delete_reminder():
@@ -98,7 +104,8 @@ def delete_reminder():
     db.session.commit()
     return jsonify({'status': 'deleted'}), 200
 
+
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()
-    app.run(debug=True)
+    app.run(host='0.0.0.0', debug=True)
